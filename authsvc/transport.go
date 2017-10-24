@@ -3,11 +3,18 @@ package authsvc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+)
+
+var (
+	// ErrBadRouting is returned when an expected path variable is missing.
+	// It always indicates programmer error.
+	ErrBadRouting = errors.New("inconsistent mapping between route and handler (programmer error)")
 )
 
 func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
@@ -30,6 +37,20 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		options...,
 	))
 
+	r.Methods("GET").Path("/sessions/{id}").Handler(httptransport.NewServer(
+		e.GetSessionEndpoint,
+		decodeGetSessionRequest,
+		encodeResponse,
+		options...,
+	))
+
+	r.Methods("DELETE").Path("/sessions/{id}").Handler(httptransport.NewServer(
+		e.DeleteSessionEndpoint,
+		decodeDeleteSessionRequest,
+		encodeResponse,
+		options...,
+	))
+
 	return r
 }
 
@@ -39,6 +60,24 @@ func decodeCreateSessionRequest(_ context.Context, r *http.Request) (interface{}
 		return nil, e
 	}
 	return req, nil
+}
+
+func decodeGetSessionRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		return nil, ErrBadRouting
+	}
+	return getSessionRequest{SessionID: id}, nil
+}
+
+func decodeDeleteSessionRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	vars := mux.Vars(r)
+	id, ok := vars["id"]
+	if !ok {
+		return nil, ErrBadRouting
+	}
+	return deleteSessionRequest{SessionID: id}, nil
 }
 
 // errorer is implemented by all concrete response types that may contain
