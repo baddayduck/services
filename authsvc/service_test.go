@@ -16,6 +16,16 @@ func TestCreateSession(t *testing.T) {
 	}
 }
 
+func TestCreateDuplicateSession(t *testing.T) {
+	ctx := context.Background()
+	svc := authsvc.NewInmemService()
+	svc.CreateSession(ctx, authsvc.Session{ID: "1", Username: "bdd"})
+	err := svc.CreateSession(ctx, authsvc.Session{ID: "1", Username: "bdd"})
+	if err != authsvc.ErrAlreadyExists {
+		t.Errorf("should not allow duplicate sessions")
+	}
+}
+
 func TestGetSession(t *testing.T) {
 	ctx := context.Background()
 	svc := authsvc.NewInmemService()
@@ -31,6 +41,16 @@ func TestGetSession(t *testing.T) {
 	}
 }
 
+func TestGetNonExistentSession(t *testing.T) {
+	ctx := context.Background()
+	svc := authsvc.NewInmemService()
+
+	_, err := svc.GetSession(ctx, "1")
+	if err != authsvc.ErrNotFound {
+		t.Errorf("did not get ErrNotFound")
+	}
+}
+
 func TestDeleteSession(t *testing.T) {
 	ctx := context.Background()
 	svc := authsvc.NewInmemService()
@@ -43,5 +63,14 @@ func TestDeleteSession(t *testing.T) {
 	_, err := svc.GetSession(ctx, "1")
 	if err != authsvc.ErrNotFound {
 		t.Errorf("session was not deleted")
+	}
+}
+
+func TestDeleteNonExistentSession(t *testing.T) {
+	ctx := context.Background()
+	svc := authsvc.NewInmemService()
+
+	if err := svc.DeleteSession(ctx, "1"); err != authsvc.ErrNotFound {
+		t.Errorf("should not be able to delete a non-existent session")
 	}
 }
