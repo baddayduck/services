@@ -33,25 +33,33 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		httptransport.ServerErrorEncoder(encodeError),
 	}
 
-	// POST    /user/                          adds another User
-	// GET     /user/:id                       retrieves the given User by id
-	// PUT     /Users/:id                       post updated User information about the User
-	// PATCH   /Users/:id                       partial updated User information
-	// DELETE  /Users/:id                       remove the given User
+	// GET		/health			basic health check
+	// POST    	/users			adds another User
+	// GET     	/users/:id		retrieves the given User by id
+	// DELETE  	/users/:id		remove the given User
 
-	r.Methods("POST").Path("/user/").Handler(httptransport.NewServer(
+	r.Methods("GET").Path("/health").Handler(httptransport.NewServer(
+		e.HealthEndpoint,
+		decodeHealthRequest,
+		encodeResponse,
+		options...,
+	))
+
+	r.Methods("POST").Path("/users").Handler(httptransport.NewServer(
 		e.AddUserEndpoint,
 		decodeaddUserRequest,
 		encodeResponse,
 		options...,
 	))
-	r.Methods("GET").Path("/Users/{id}").Handler(httptransport.NewServer(
+
+	r.Methods("GET").Path("/users/{id}").Handler(httptransport.NewServer(
 		e.GetUserEndpoint,
 		decodeGetUserRequest,
 		encodeResponse,
 		options...,
 	))
-	r.Methods("DELETE").Path("/Users/{id}").Handler(httptransport.NewServer(
+
+	r.Methods("DELETE").Path("/users/{id}").Handler(httptransport.NewServer(
 		e.DeleteUserEndpoint,
 		decodeDeleteUserRequest,
 		encodeResponse,
@@ -124,6 +132,10 @@ func decodeDeleteUserResponse(_ context.Context, resp *http.Response) (interface
 	var response deleteUserResponse
 	err := json.NewDecoder(resp.Body).Decode(&response)
 	return response, err
+}
+
+func decodeHealthRequest(_ context.Context, _ *http.Request) (interface{}, error) {
+	return HealthRequest{}, nil
 }
 
 // errorer is implemented by all concrete response types that may contain

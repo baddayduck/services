@@ -26,9 +26,17 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 		httptransport.ServerErrorEncoder(encodeError),
 	}
 
+	// GET		/health
 	// POST 	/sessions/
 	// GET 		/sessions/:id
 	// DELETE 	/sessions/:id
+
+	r.Methods("GET").Path("/health").Handler(httptransport.NewServer(
+		e.HealthEndpoint,
+		decodeHealthRequest,
+		encodeResponse,
+		options...,
+	))
 
 	r.Methods("POST").Path("/sessions/").Handler(httptransport.NewServer(
 		e.CreateSessionEndpoint,
@@ -78,6 +86,10 @@ func decodeDeleteSessionRequest(_ context.Context, r *http.Request) (interface{}
 		return nil, ErrBadRouting
 	}
 	return deleteSessionRequest{SessionID: id}, nil
+}
+
+func decodeHealthRequest(_ context.Context, _ *http.Request) (interface{}, error) {
+	return HealthRequest{}, nil
 }
 
 // errorer is implemented by all concrete response types that may contain
