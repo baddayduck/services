@@ -15,6 +15,7 @@ type Service interface {
 	GetSession(ctx context.Context, id string) (Session, error)
 	CreateSession(ctx context.Context, sess Session) error
 	DeleteSession(ctx context.Context, id string) error
+	HealthCheck() bool
 }
 
 type Session struct {
@@ -61,4 +62,9 @@ func (s *inmemService) DeleteSession(ctx context.Context, id string) error {
 	}
 	delete(s.m, id)
 	return nil
+}
+
+func (s *inmemService) HealthCheck() bool {
+	// This really shouldn't always return true, but works for now.
+	return true
 }

@@ -14,7 +14,10 @@ import (
 
 func main() {
 	var (
-		httpAddr = flag.String("http.addr", ":8080", "HTTP listen address")
+		consulAddr    = flag.String("consul.addr", "", "consul address")
+		consulPort    = flag.String("consul.port", "", "consul port")
+		advertiseAddr = flag.String("advertise.addr", "", "advertise address")
+		advertisePort = flag.String("advertise.port", "", "advertise port")
 	)
 	flag.Parse()
 
@@ -36,6 +39,13 @@ func main() {
 		h = authsvc.MakeHTTPHandler(s, log.With(logger, "component", "HTTP"))
 	}
 
+	registrar := authsvc.Register(
+		*consulAddr,
+		*consulPort,
+		*advertiseAddr,
+		*advertisePort,
+	)
+
 	errs := make(chan error)
 	go func() {
 		c := make(chan os.Signal)
@@ -44,9 +54,13 @@ func main() {
 	}()
 
 	go func() {
-		logger.Log("transport", "HTTP", "addr", *httpAddr)
-		errs <- http.ListenAndServe(*httpAddr, h)
+		logger.Log("transport", "HTTP", "port", *advertisePort)
+		// register service
+		registrar.Register()
+		errs <- http.ListenAndServe(fmt.Sprintf(":%s", *advertisePort), h)
 	}()
-
-	logger.Log("exit", <-errs)
+	err := <-errs
+	// deregister service
+	registrar.Deregister()
+	logger.Log("exit", err)
 }

@@ -27,6 +27,7 @@ type Endpoints struct {
 	GetUserEndpoint    endpoint.Endpoint
 	AddUserEndpoint    endpoint.Endpoint
 	DeleteUserEndpoint endpoint.Endpoint
+	HealthEndpoint     endpoint.Endpoint
 }
 
 // MakeServerEndpoints returns an Endpoints struct where each endpoint invokes
@@ -37,6 +38,7 @@ func MakeServerEndpoints(s Service) Endpoints {
 		GetUserEndpoint:    MakeGetUserEndpoint(s),
 		AddUserEndpoint:    MakeAddUserEndpoint(s),
 		DeleteUserEndpoint: MakeDeleteUserEndpoint(s),
+		HealthEndpoint:     MakeHealthEndpoint(s),
 	}
 }
 
@@ -174,3 +176,15 @@ type deleteUserResponse struct {
 }
 
 func (r deleteUserResponse) error() error { return r.Err }
+
+type HealthRequest struct{}
+type HealthResponse struct {
+	Status bool `json:"status"`
+}
+
+func MakeHealthEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		status := s.HealthCheck()
+		return HealthResponse{Status: status}, nil
+	}
+}

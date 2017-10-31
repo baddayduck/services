@@ -10,6 +10,7 @@ type Endpoints struct {
 	CreateSessionEndpoint endpoint.Endpoint
 	GetSessionEndpoint    endpoint.Endpoint
 	DeleteSessionEndpoint endpoint.Endpoint
+	HealthEndpoint        endpoint.Endpoint
 }
 
 func MakeServerEndpoints(s Service) Endpoints {
@@ -17,6 +18,7 @@ func MakeServerEndpoints(s Service) Endpoints {
 		CreateSessionEndpoint: MakeCreateSessionEndpoint(s),
 		GetSessionEndpoint:    MakeGetSessionEndpoint(s),
 		DeleteSessionEndpoint: MakeDeleteSessionEndpoint(s),
+		HealthEndpoint:        MakeHealthEndpoint(s),
 	}
 }
 
@@ -75,3 +77,15 @@ type deleteSessionResponse struct {
 }
 
 func (r deleteSessionResponse) error() error { return r.Err }
+
+type HealthRequest struct{}
+type HealthResponse struct {
+	Status bool `json:"status"`
+}
+
+func MakeHealthEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		status := s.HealthCheck()
+		return HealthResponse{Status: status}, nil
+	}
+}

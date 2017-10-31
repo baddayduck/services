@@ -3,7 +3,7 @@
 
 [[projects]]
   name = "github.com/go-kit/kit"
-  packages = ["log"]
+  packages = ["endpoint","log","sd","sd/consul","sd/internal/instance","transport/http"]
   revision = "4dc7be5d2d12881735283bcab7352178e190fc71"
   version = "v0.6.0"
 
@@ -32,14 +32,44 @@
   version = "v1.5.0"
 
 [[projects]]
+  name = "github.com/hashicorp/consul"
+  packages = ["api"]
+  revision = "51ea240df8476e02215d53fbfad5838bf0d44d21"
+  version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-cleanhttp"
+  packages = ["."]
+  revision = "3573b8b52aa7b37b9358d966a898feb387f62437"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-rootcerts"
+  packages = ["."]
+  revision = "6bb64b370b90e7ef1fa532be9e591a81c3493e00"
+
+[[projects]]
+  name = "github.com/hashicorp/serf"
+  packages = ["coordinate"]
+  revision = "d6574a5bb1226678d7010325fb6c985db20ee458"
+  version = "v0.8.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/kr/logfmt"
   packages = ["."]
   revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
 
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1f407430a29432ac5be267525d157652b1004ec0aa337206bd63bef51b3bf7fd"
+  inputs-digest = "ab1dab5286fef4c61a3485d6a1f4840448463bcb4a0c5b8c5296d4ab55b29657"
   solver-name = "gps-cdcl"
   solver-version = 1

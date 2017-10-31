@@ -18,6 +18,7 @@ type Service interface {
 	GetUser(ctx context.Context, id string) (User, error)
 	AddUser(ctx context.Context, user User) error
 	DeleteUser(ctx context.Context, id string) error
+	HealthCheck() bool
 }
 
 // User represents a user
@@ -69,4 +70,9 @@ func (s *inmemService) DeleteUser(ctx context.Context, id string) error {
 	}
 	delete(s.m, id)
 	return nil
+}
+
+func (s *inmemService) HealthCheck() bool {
+	// This really shouldn't always return true, but works for now.
+	return true
 }
