@@ -11,10 +11,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gorilla/mux"
-
 	"github.com/go-kit/kit/log"
 	httptransport "github.com/go-kit/kit/transport/http"
+	"github.com/gorilla/mux"
 )
 
 var (
@@ -41,28 +40,28 @@ func MakeHTTPHandler(s Service, logger log.Logger) http.Handler {
 	r.Methods("GET").Path("/health").Handler(httptransport.NewServer(
 		e.HealthEndpoint,
 		decodeHealthRequest,
-		encodeResponse,
+		EncodeResponse,
 		options...,
 	))
 
 	r.Methods("POST").Path("/users").Handler(httptransport.NewServer(
 		e.AddUserEndpoint,
 		decodeaddUserRequest,
-		encodeResponse,
+		EncodeResponse,
 		options...,
 	))
 
 	r.Methods("GET").Path("/users/{id}").Handler(httptransport.NewServer(
 		e.GetUserEndpoint,
 		decodeGetUserRequest,
-		encodeResponse,
+		EncodeResponse,
 		options...,
 	))
 
 	r.Methods("DELETE").Path("/users/{id}").Handler(httptransport.NewServer(
 		e.DeleteUserEndpoint,
 		decodeDeleteUserRequest,
-		encodeResponse,
+		EncodeResponse,
 		options...,
 	))
 	return r
@@ -82,7 +81,7 @@ func decodeGetUserRequest(_ context.Context, r *http.Request) (request interface
 	if !ok {
 		return nil, ErrBadRouting
 	}
-	return getUserRequest{ID: id}, nil
+	return GetUserRequest{ID: id}, nil
 }
 
 func decodeDeleteUserRequest(_ context.Context, r *http.Request) (request interface{}, err error) {
@@ -95,24 +94,24 @@ func decodeDeleteUserRequest(_ context.Context, r *http.Request) (request interf
 }
 
 func encodeAddUserRequest(ctx context.Context, req *http.Request, request interface{}) error {
-	// r.Methods("POST").Path("/Users/")
-	req.Method, req.URL.Path = "POST", "/Users/"
+	// r.Methods("POST").Path("/users/")
+	req.Method, req.URL.Path = "POST", "/users/"
 	return encodeRequest(ctx, req, request)
 }
 
 func encodeGetUserRequest(ctx context.Context, req *http.Request, request interface{}) error {
-	// r.Methods("GET").Path("/Users/{id}")
-	r := request.(getUserRequest)
+	// r.Methods("GET").Path("/users/{id}")
+	r := request.(GetUserRequest)
 	UserID := url.QueryEscape(r.ID)
-	req.Method, req.URL.Path = "GET", "/Users/"+UserID
+	req.Method, req.URL.Path = "GET", "/users/"+UserID
 	return encodeRequest(ctx, req, request)
 }
 
 func encodeDeleteUserRequest(ctx context.Context, req *http.Request, request interface{}) error {
-	// r.Methods("DELETE").Path("/Users/{id}")
+	// r.Methods("DELETE").Path("/users/{id}")
 	r := request.(deleteUserRequest)
 	UserID := url.QueryEscape(r.ID)
-	req.Method, req.URL.Path = "DELETE", "/Users/"+UserID
+	req.Method, req.URL.Path = "DELETE", "/users/"+UserID
 	return encodeRequest(ctx, req, request)
 }
 
@@ -123,7 +122,7 @@ func decodeAddUserResponse(_ context.Context, resp *http.Response) (interface{},
 }
 
 func decodeGetUserResponse(_ context.Context, resp *http.Response) (interface{}, error) {
-	var response getUserResponse
+	var response GetUserResponse
 	err := json.NewDecoder(resp.Body).Decode(&response)
 	return response, err
 }
@@ -146,11 +145,11 @@ type errorer interface {
 	error() error
 }
 
-// encodeResponse is the common method to encode all response types to the
+// EncodeResponse is the common method to encode all response types to the
 // client. I chose to do it this way because, since we're using JSON, there's no
 // reason to provide anything more specific. It's certainly possible to
 // specialize on a per-response (per-method) basis.
-func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+func EncodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
 	if e, ok := response.(errorer); ok && e.error() != nil {
 		// Not a Go kit transport error, but a business-logic error.
 		// Provide those as HTTP errors.
