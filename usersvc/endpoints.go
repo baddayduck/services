@@ -81,12 +81,12 @@ func (e Endpoints) AddUser(ctx context.Context, u User) error {
 
 // GetUser implements Service. Primarily useful in a client.
 func (e Endpoints) GetUser(ctx context.Context, id string) (User, error) {
-	request := getUserRequest{ID: id}
+	request := GetUserRequest{ID: id}
 	response, err := e.GetUserEndpoint(ctx, request)
 	if err != nil {
 		return User{}, err
 	}
-	resp := response.(getUserResponse)
+	resp := response.(GetUserResponse)
 	return resp.User, resp.Err
 }
 
@@ -115,9 +115,9 @@ func MakeAddUserEndpoint(s Service) endpoint.Endpoint {
 // Primarily useful in a server.
 func MakeGetUserEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-		req := request.(getUserRequest)
+		req := request.(GetUserRequest)
 		p, e := s.GetUser(ctx, req.ID)
-		return getUserResponse{User: p, Err: e}, nil
+		return GetUserResponse{User: p, Err: e}, nil
 	}
 }
 
@@ -156,16 +156,16 @@ type addUserResponse struct {
 
 func (r addUserResponse) error() error { return r.Err }
 
-type getUserRequest struct {
+type GetUserRequest struct {
 	ID string
 }
 
-type getUserResponse struct {
+type GetUserResponse struct {
 	User User  `json:"User,omitempty"`
 	Err  error `json:"err,omitempty"`
 }
 
-func (r getUserResponse) error() error { return r.Err }
+func (r GetUserResponse) error() error { return r.Err }
 
 type deleteUserRequest struct {
 	ID string
