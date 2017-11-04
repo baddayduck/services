@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+service Account {
+    rpc Create(CreateRequest) returns (CreateResponse) {}
+    rpc Read(ReadRequest) returns (ReadResponse) {}
+}
+
+message User {
+    string id = 1;       // uuid
+    string username = 2; // alphanumeric user
+    string email = 3;
+    int64 created = 4;   // unix
+    int64 updated = 5;   // unix
+}
+
+message CreateRequest {
+	User user = 1;
+    string password = 2;
+}
+
+message CreateResponse {
+}
+
+message ReadRequest {
+	string id = 1;
+}
+
+message ReadResponse {
+	User user = 1;
+}
