@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+service Auth {
+    rpc Login(LoginRequest) returns (LoginResponse) {}
+    rpc Logout(LogoutRequest) returns (LogoutResponse) {}
+    rpc ReadSession(ReadSessionRequest) returns (ReadSessionResponse) {}
+}
+
+message Session {
+    string id = 1;
+    string username = 2;
+    int64 created = 3; // unix
+    int64 expires = 4; // unix
+}
+
+message LoginRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message LoginResponse {
+    Session session = 1;
+}
+
+message LogoutRequest {
+    string sessionId = 1;
+}
+
+message LogoutResponse {
+}
+
+message ReadSessionRequest {
+    string sessionId = 1;
+}
+
+message ReadSessionResponse {
+    Session session = 1;
+}
