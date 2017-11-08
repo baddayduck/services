@@ -1,13 +1,12 @@
-FROM golang:1.9.1 as usersvc
+FROM golang:1.9.1 as authsvc
 
 RUN go get github.com/golang/dep && go install github.com/golang/dep/cmd/dep
 
 WORKDIR /go/src/github.com/baddayduck/services/authsvc
 COPY authsvc .
-WORKDIR /go/src/github.com/baddayduck/services/authsvc/cmd/authsvc
 RUN dep ensure -vendor-only  
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o authsvc .
 
 FROM alpine
-COPY --from=usersvc /go/src/github.com/baddayduck/services/authsvc/cmd/authsvc /bin
+COPY --from=authsvc /go/src/github.com/baddayduck/services/authsvc/authsvc /bin
 ENTRYPOINT [ "/bin/authsvc" ] 
